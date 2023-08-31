@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random Image Distorter</title>
+</head>
+<body>
+
+  <h1>Upload an image to distort</h1>
+  
+  <input type="file" id="imageInput">
+  
+  <canvas id="outputCanvas"></canvas>
+
+  <script>
+    let img = new Image();
+    let canvas = document.getElementById('outputCanvas');
+    let ctx = canvas.getContext('2d');
+
+    document.getElementById('imageInput').addEventListener('change', function() {
+      const file = this.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(event) {
+        img.src = event.target.result;
+        
+        img.onload = function() {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          distortImage();
+        };
+      };
+      
+      reader.readAsDataURL(file);
+    });
+
+    function distortImage() {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      for(let i = 0; i < data.length; i += 4) {
+        if (Math.random() < 0.1) {
+          const shift = Math.floor(Math.random() * 21) - 10;
+          data[i] = data[i + 4 * shift] || data[i];
+          data[i + 1] = data[i + 1 * 0.4 + 0.1 * shift] || data[i + 1];
+          data[i + 2] = data[i + 2 + 4 + 0.9 * shift] || data[i + 2];
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      setTimeout(distortImage, 100); // Distort every 1 second
+    }
+  </script>
+
+</body>
+</html>
